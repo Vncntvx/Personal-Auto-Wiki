@@ -209,7 +209,9 @@ source_mtime: 2026-04-08T15:00:05Z
 ## 依赖工具
 
 - AI Agent 运行环境，例如 Claude Code, Codex等
-- **qmd MCP**，本地 Markdown 搜索引擎
+- qmd CLI 和 MCP 工具，本地 Markdown 搜索引擎
+
+- openssl，用于计算文件哈希
 
 ---
 

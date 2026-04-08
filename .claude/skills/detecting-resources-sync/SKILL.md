@@ -100,10 +100,26 @@ source_mtime: 2026-04-08T17:30:00Z
 
 ## Hash 计算
 
-```python
-import hashlib
+使用系统命令计算 SHA256 前 8 位：
 
-def compute_hash(file_path: str) -> str:
-    with open(file_path, 'rb') as f:
-        return hashlib.sha256(f.read()).hexdigest()[:8]
+### macOS / Linux
+
+```bash
+sha256sum "$file" | cut -c1-8
+# 或
+openssl dgst -sha256 "$file" | awk '{print $2}' | cut -c1-8
 ```
+
+### Windows (PowerShell)
+
+```powershell
+(Get-FileHash "$file" -Algorithm SHA256).Hash.Substring(0,8)
+```
+
+### 跨平台统一命令（推荐）
+
+```bash
+openssl dgst -sha256 "$file" | sed 's/.*= //' | cut -c1-8
+```
+
+**注意**：哈希值取 SHA256 输出的前 8 位十六进制字符。

@@ -120,6 +120,19 @@ source_mtime: ISO8601时间戳
 | `source_hash` | 文件内容 SHA256 前 8 位，用于检测变更 |
 | `source_mtime` | 文件最后修改时间，用于快速筛选 |
 
+**Hash 计算**：
+
+```bash
+# macOS / Linux
+sha256sum "$file" | cut -c1-8
+
+# Windows PowerShell
+(Get-FileHash "$file" -Algorithm SHA256).Hash.Substring(0,8)
+
+# 跨平台（openssl）
+openssl dgst -sha256 "$file" | sed 's/.*= //' | cut -c1-8
+```
+
 ### 3.3 页面引用
 
 页面间使用 `[[wiki-links]]` 格式引用。

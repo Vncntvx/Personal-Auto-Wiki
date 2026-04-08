@@ -213,7 +213,8 @@ The system uses the local `qmd` MCP tool for Markdown search and supports:
 ## Dependencies
 
 - An AI agent runtime (e.g., Claude Code, Qwen Code)
-- `qmd` MCP — local Markdown search engine
+- `qmd` cli and MCP tools, local Markdown search engine
+- `openssl`, for computing file hashes
 
 ---
 
