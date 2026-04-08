@@ -147,6 +147,7 @@ Generates a Wiki health report: orphan pages, concept gaps, contradiction annota
 
 | Trigger phrases | Skill | Function |
 |-----------------|-------|----------|
+| `sync and process`, `full sync`, `detect and process` | `syncing-wiki` | Full workflow (recommended) |
 | `detect new files`, `sync status`, `check updates` | `detecting-resources-sync` | Scan Resources and report sync status |
 | `ingest`, `process file`, `update wiki` | `ingesting-resources` | Ingest source files into the Wiki |
 | `health check`, `check status`, `diagnose` | `checking-wiki-health` | Run Wiki health checks |
@@ -212,7 +213,7 @@ The system uses the local `qmd` MCP tool for Markdown search and supports:
 
 ## Dependencies
 
-- An AI agent runtime (e.g., Claude Code, Qwen Code)
+- An AI agent runtime (e.g., Claude Code, Codex)
 - `qmd` cli and MCP tools, local Markdown search engine
 - `openssl`, for computing file hashes
 
@@ -224,4 +225,3 @@ The system uses the local `qmd` MCP tool for Markdown search and supports:
 - [PARA method](https://fortelabs.com/blog/para/) — organization framework for raw sources
 - [Obsidian](https://obsidian.md/) — local Markdown knowledge browser
 - [qmd](https://github.com/nickthecat/qmd) — local Markdown search engine
-

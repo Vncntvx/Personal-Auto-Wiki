@@ -1,6 +1,6 @@
 ---
 name: detecting-resources-sync
-description: 检测 ObsidianRaw/03_Resources 与 Wiki/Sources 的同步状态，识别新增、变更、删除的文件。当用户请求"检测新文件"、"同步状态"、"检查更新"时使用，或作为健康检查的一部分。
+description: 检测 Resources 与 Wiki/Sources 的同步状态，识别新增、变更、删除的文件。当用户请求"检测新文件"、"同步状态"时使用。
 ---
 
 # Resources 同步检测
@@ -9,7 +9,7 @@ description: 检测 ObsidianRaw/03_Resources 与 Wiki/Sources 的同步状态，
 
 ## 触发条件
 
-- 用户请求"检测新文件"、"同步状态"、"检查更新"
+- 用户请求"检测新文件"、"同步状态"
 - 健康检查流程中自动调用
 - 摄取前确认待处理文件
 
@@ -86,8 +86,8 @@ source_mtime: 2026-04-08T17:30:00Z
 
 | 状态 | 建议操作 |
 |------|----------|
-| 新增文件 | 调用 `ingesting-resources` 摄取 |
-| 变更文件 | 调用 `ingesting-resources` 重新摄取 |
+| 新增文件 | 调用 `syncing-wiki` 或 `ingesting-resources` 摄取 |
+| 变更文件 | 调用 `syncing-wiki` 或 `ingesting-resources` 更新 |
 | 删除文件 | 标记 Sources 页面或删除 |
 
 ## 边界情况
@@ -123,3 +123,38 @@ openssl dgst -sha256 "$file" | sed 's/.*= //' | cut -c1-8
 ```
 
 **注意**：哈希值取 SHA256 输出的前 8 位十六进制字符。
+
+---
+
+## 后续操作引导
+
+检测完成后，应引导用户进行下一步操作：
+
+### 输出后询问
+
+```markdown
+---
+**发现 N 个待处理文件**
+
+是否继续处理？
+- 输入"是"或"继续" — 执行完整同步处理
+- 输入"仅处理新增" — 仅处理新增文件
+- 输入具体文件路径 — 仅处理指定文件
+```
+
+### 推荐操作
+
+| 检测结果 | 推荐操作 |
+|---------|---------|
+| 有新增文件 | 调用 `sync-and-process` 完整处理 |
+| 有变更文件 | 调用 `ingesting-resources` 更新 |
+| 有删除文件 | 标记对应 Sources 页面 |
+| 无变化 | 无需操作 |
+
+---
+
+## 与 syncing-wiki 的关系
+
+本 Skill 是 `syncing-wiki` 的阶段 1（检测同步状态）。
+
+独立使用时，输出后应询问用户是否继续处理。

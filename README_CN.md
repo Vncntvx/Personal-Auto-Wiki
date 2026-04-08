@@ -147,7 +147,8 @@ PersonalWiki/
 
 | 触发词 | 对应 Skill | 功能 |
 |--------|-----------|------|
-| `检测新文件`、`同步状态`、`检查更新` | `detecting-resources-sync` | 检测文件同步状态 |
+| `同步并处理`、`完整同步`、`检测并处理` | `syncing-wiki` | 完整工作流（推荐） |
+| `检测新文件`、`同步状态` | `detecting-resources-sync` | 仅检测变更状态 |
 | `摄取`、`处理新文件`、`更新 Wiki` | `ingesting-resources` | 摄取知识到 Wiki |
 | `健康检查`、`检查状态`、`诊断` | `checking-wiki-health` | 检查 Wiki 健康状态 |
 | 直接提问 | `querying-wiki` | 检索知识并回答 |
@@ -210,13 +211,13 @@ source_mtime: 2026-04-08T15:00:05Z
 
 - AI Agent 运行环境，例如 Claude Code, Codex等
 - qmd CLI 和 MCP 工具，本地 Markdown 搜索引擎
-
 - openssl，用于计算文件哈希
 
 ---
 
 ## 参考文档
 
-- [Claude Skills 开发完全指南](ObsidianRaw/03_Resources/WorkTools/AgentsSkills/Claude_Skills_开发完全指南.md)
-- [Claude Skills Best Practices](ObsidianRaw/03_Resources/WorkTools/AgentsSkills/Claude_Skills_BestPractices.md)
-- [完整协作规范](AGENTS.md)
+- [Karpathy: LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — original inspiration
+- [PARA method](https://fortelabs.com/blog/para/) — organization framework for raw sources
+- [Obsidian](https://obsidian.md/) — local Markdown knowledge browser
+- [qmd](https://github.com/nickthecat/qmd) — local Markdown search engine
