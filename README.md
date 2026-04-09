@@ -7,7 +7,7 @@
 
 Personal knowledge-base system that encapsulates core workflows as Skills to automatically transform reusable source materials into a structured Wiki. Paired with the `qmd` MCP search engine, it enables automated ingestion, intelligent querying, and health maintenance for long-term knowledge preservation and efficient retrieval.
 
-> Project article: https://blog.wenjiexu.site/zh/posts/llm-personal-wiki/
+> Project article: https://blog.wenjiexu.site/en/posts/llm-personal-wiki/
 
 ## Overview
 
@@ -16,7 +16,7 @@ Personal knowledge-base system that encapsulates core workflows as Skills to aut
 - 🔄 **Automatic sync detection** — detect new, modified and deleted files under the `ObsidianRaw/03_Resources/` directory
 - 📥 **Intelligent ingestion** — extract concepts and entities from source materials, produce concise summaries, and build indexes
 - 🔍 **Hybrid retrieval** — combine lexical (keyword) search and vector (semantic) search for accurate recall
-- 📊 **Health checks** — detect orphan pages, concept gaps, contradiction annotations and sync issues
+- 📊 **Health checks** — detect orphan pages, concept gaps, contradiction annotations, cognitive quality, and sync issues
 
 ---
 
@@ -26,7 +26,7 @@ Personal knowledge-base system that encapsulates core workflows as Skills to aut
 
 ```text
 PersonalWiki/
-├── ObsidianRaw/                  # Raw source materials (organized with the PARA method)
+├── ObsidianRaw/                  # Raw source materials (organized with the PARA method, read-only)
 │   ├── 00_Inbox/                 # Inbox (temporary, not processed)
 │   ├── 01_Projects/              # Projects (action-oriented, not processed)
 │   ├── 02_Areas/                 # Areas (ongoing responsibilities, not processed)
@@ -38,13 +38,15 @@ PersonalWiki/
 │   ├── Concepts/                 # Concept pages (theories, frameworks)
 │   ├── Entities/                 # Entity pages (people, organizations, tools)
 │   ├── Sources/                  # Source summaries (tracks original file status)
-│   └── Outputs/                  # Query outputs (high-value results saved from queries)
+│   └── Outputs/                  # Analytical outputs (high-value synthesis from queries)
 ├── .claude/skills/               # Skills definitions (implemented workflows)
+│   ├── syncing-wiki/             # Full sync workflow
 │   ├── ingesting-resources/      # Ingesting resources workflow
 │   ├── querying-wiki/            # Querying the Wiki workflow
 │   ├── checking-wiki-health/     # Health checking workflow
 │   └── detecting-resources-sync/ # Resources sync detection workflow
 ├── AGENTS.md                     # Comprehensive operational specification
+├── VERSION                       # Architecture specification version
 └── README.md                     # This file
 ```
 
@@ -72,10 +74,18 @@ The ingestion pipeline skips:
 
 ## Quick start
 
-### 1. Detect new/changed files
+### 1. Full sync (recommended)
 
 ```text
-Detect new files
+sync and process
+```
+
+Runs the complete workflow in one pass: detect → confirm → process → verify → log → report.
+
+### 2. Detect new/changed files
+
+```text
+detect new files
 ```
 
 Produces a sync report comparing `ObsidianRaw/03_Resources/` and `Wiki/Sources/`:
@@ -84,7 +94,7 @@ Produces a sync report comparing `ObsidianRaw/03_Resources/` and `Wiki/Sources/`
 - Changed files — require re-ingestion
 - Deleted files — require handling in Wiki
 
-### 2. Ingest resources
+### 3. Ingest resources
 
 ```bash
 # Ingest a single file
@@ -97,7 +107,7 @@ ingest "Academic/Research Notes/Theory/"
 ingest --all-new
 ```
 
-### 3. Query the Wiki
+### 4. Query the Wiki
 
 Ask a question and the system will search the Wiki and answer:
 
@@ -106,13 +116,13 @@ What are the development stages of resilience theory?
 What are typical applications of Bayesian networks?
 ```
 
-### 4. Run health checks
+### 5. Run health checks
 
 ```text
-Run health check
+run health check
 ```
 
-Generates a Wiki health report: orphan pages, concept gaps, contradiction annotations, and unsynced sources.
+Generates a Wiki health report: orphan pages, concept gaps, contradiction annotations, cognitive quality, and unsynced sources.
 
 ---
 
@@ -121,24 +131,22 @@ Generates a Wiki health report: orphan pages, concept gaps, contradiction annota
 ### First-time setup
 
 ```text
-1. Detect new files        → review the pending files list
-2. Ingest all new files    → bulk-build the Wiki
-3. Run health check        → validate the result
+1. sync and process    → detect and ingest in one pass (recommended)
+2. run health check    → validate the result
 ```
 
 ### Ongoing maintenance
 
 ```text
-1. Regularly detect new files  → discover updates
-2. Ingest selected files      → update the Wiki
-3. Weekly health check        → keep the Wiki healthy
+1. regularly sync and process → discover updates and rebuild the Wiki
+2. weekly health check        → keep the Wiki healthy
 ```
 
 ### Querying for knowledge
 
 ```text
 1. Ask a question             → querying-wiki searches the Wiki
-2. If the result is high-value → consider saving it to `Wiki/Outputs/`
+2. If the result is high-value → consider backfilling to Wiki/Outputs/
 ```
 
 ---

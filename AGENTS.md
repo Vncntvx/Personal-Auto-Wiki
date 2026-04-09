@@ -4,77 +4,84 @@
 
 ## 1. 系统架构
 
-### 1.1 目录结构
-
 ```
 PersonalWiki/
-├── ObsidianRaw/          # 原始资料存储目录（只读）
-│   ├── 00_Inbox/         # 收件箱（临时，不处理）
-│   ├── 01_Projects/      # 项目（行动导向，不处理）
-│   ├── 02_Areas/         # 领域（持续维护，不处理）
-│   ├── 03_Resources/     # 资源 ← 唯一可复用的知识来源
-│   └── 04_Archive/       # 归档（历史记录，不处理）
+├── ObsidianRaw/          # 原始资料（只读）
+│   ├── 00_Inbox/         #   临时收件箱（不处理）
+│   ├── 01_Projects/      #   项目（行动导向，不处理）
+│   ├── 02_Areas/         #   领域（持续维护，不处理）
+│   ├── 03_Resources/     #   资源 ← 唯一可摄取的知识来源
+│   └── 04_Archive/       #   归档（不处理）
 ├── Wiki/                 # 知识库主目录（由 Agent 维护）
-│   ├── Index.md          # 知识库目录
-│   ├── Log.md            # 操作日志
-│   ├── Concepts/         # 概念页面
-│   ├── Entities/         # 实体页面
-│   ├── Sources/          # 原始资料摘要
-│   └── Outputs/          # 查询产出
+│   ├── Index.md          #   知识库目录
+│   ├── Log.md            #   操作日志
+│   ├── Concepts/         #   概念页面
+│   ├── Entities/         #   实体页面
+│   ├── Sources/          #   原始资料摘要
+│   └── Outputs/          #   查询产出
 ├── .claude/skills/       # Claude Skills 定义
-├── AGENTS.md             # 本文件（完整协作规范）
-└── CLAUDE.md             # 引用 AGENTS.md
+├── AGENTS.md             # 本文件
+└── CLAUDE.md             # 引用本文件
 ```
 
-### 1.2 摄取范围
+**摄取范围**：仅处理 `ObsidianRaw/03_Resources/`。其余 PARA 目录（Inbox/Projects/Areas/Archive）具有行动属性或时效性，不属于可复用知识范畴。
 
-**仅处理 `ObsidianRaw/03_Resources/` 目录。**
+---
 
-PARA 结构中，各目录的定位不同：
-- `00_Inbox/` — 临时收件箱，待分类
-- `01_Projects/` — 当前项目，行动导向，有时效性
-- `02_Areas/` — 持续责任区域，需主动维护
-- `03_Resources/` — 未来可能有用的参考资料，**可复用知识**
-- `04_Archive/` — 已完成或不再活跃的内容
+## 2. 全局术语
 
-Wiki 的目标是构建可复用的知识库，因此只从 Resources 目录摄取。Projects 和 Areas 的内容具有行动属性，不属于可复用知识范畴。
+为避免跨技能与文档歧义，统一使用以下术语：
 
-### 1.3 核心工作流
+| 术语 | 定义 | 边界 |
+|------|------|------|
+| Resources 原始文件 | `ObsidianRaw/03_Resources/` 下的 Markdown 文件 | 仅读取，不直接改写 |
+| Sources 页面 | `Wiki/Sources/` 下的来源摘要页（`type: source`） | 用于来源追踪与摘要沉淀 |
+| 稳定知识页 | `Wiki/Concepts/` 与 `Wiki/Entities/` 页面 | 查询优先复用 |
+| 分析输出页 | `Wiki/Outputs/` 页面（`type: output`） | 查询产出的可复用综合 |
+| 同步状态 | 新增 (`new`) / 变更 (`modified`) / 删除 (`deleted`) / 同步 (`synced`) | 重命名 (`renamed`) 由删除+新增 hash 匹配推断 |
+| 认知质量 | 页面结构完整度与知识深度 | 量化评分见 checking-wiki-health skill |
+| 当前综合 | 稳定知识页中基于来源的综合说明段落 | 新来源改变理解时必须重写 |
+| 摄取 | 将 Resources 原始文件转化为 Wiki 页面 | 由 ingesting-resources skill 执行 |
+| 回填 | 将查询结果写入 `Wiki/Outputs/` | 仅在用户同意时执行 |
+| 矛盾标注 | `> [!warning] 矛盾标注` callout 块 | 标注不同来源间的矛盾观点 |
+
+> 术语一致性要求：后续所有 Skills、Reference、日志与报告应优先使用上述术语，不混用同义表达。
+
+---
+
+## 3. 知识演化原则
+
+本知识库是持续维护的 **compounding wiki**，每次操作都应让整体理解更完整、更可复用。
+
+1. **先综合，后归档**：`Sources/` 保留来源摘要与出处；稳定知识页负责沉淀可复用知识；分析输出页负责沉淀查询中的高价值综合。
+2. **知识增量必须传播**：新来源不只创建 Sources 页面，还应检查并更新受影响的稳定知识页与分析输出页。如改变已有理解，必须重写"当前综合"部分，而非仅追加引用。
+3. **查询也是知识生产**：跨来源综述、对比分析、阶段性结论不应仅停留在对话中。如具长期价值，应回填到分析输出页。当查询暴露出稳定知识页或分析输出页长期缺失时，应视为知识缺口。
+4. **健康检查兼顾结构与认知**：不仅检查缺页、孤立页、缺链、未同步文件，还要识别过时结论、浅层综合、长期未处理矛盾、应沉淀但未沉淀的输出。
+5. **Schema 与知识库共演**：Schema（本文件、Skills、Reference）不是静态规范，应随知识库增长和使用反馈持续迭代。变更必须记录到 `CHANGELOG.md`，重大变更同步更新 `VERSION`。
+
+---
+
+## 4. 工作流编排
 
 | 工作流 | Skill | 触发场景 |
 |--------|-------|----------|
-| **完整同步** | `syncing-wiki` | 检测并处理所有变更 |
-| **摄取** | `ingesting-resources` | 处理 Resources 新文件 |
-| **查询** | `querying-wiki` | 用户提问、知识检索 |
-| **健康检查** | `checking-wiki-health` | 检测 Wiki 完整性 |
-| **同步检测** | `detecting-resources-sync` | 仅检测变更状态 |
+| 完整同步 | `syncing-wiki` | 检测并处理所有变更 |
+| 摄取 | `ingesting-resources` | 处理 Resources 新文件 |
+| 查询 | `querying-wiki` | 用户提问、知识检索 |
+| 健康检查 | `checking-wiki-health` | 检测 Wiki 完整性 |
+| 同步检测 | `detecting-resources-sync` | 仅检测变更状态 |
 
-**推荐使用**：日常维护时使用 `syncing-wiki` 一次性完成检测和处理。
+**编排顺序（强约束）**：检测（detecting-resources-sync）→ 摄取（ingesting-resources）→ 验证（checking-wiki-health）→ 查询（querying-wiki）→ 留痕（Log.md）。保证"先检测、后处理、再验证、最后留痕"的可追溯闭环。
 
----
-
-## 2. 知识查询
-
-通过 `querying-wiki` skill 处理所有知识检索请求。该 skill 封装了 `qmd` CLI 工具的使用方法，支持混合检索（词汇+语义）。
-
-**核心命令**：
-- `qmd query` — 混合搜索（自动扩展+重排序，默认推荐）
-- `qmd search` — BM25 关键词搜索
-- `qmd vsearch` — 纯向量搜索
-- `qmd get <file>` — 精确获取文档
-- `qmd multi-get <pattern>` — 批量获取（glob）
-- `qmd ls wiki` — 浏览索引
-- `qmd collection add wiki <path>` — 添加新 wiki 到索引
-
-**触发**：用户提出问题或请求查询知识库时自动加载。
+**推荐**：日常维护使用 `syncing-wiki` 一次性完成检测和处理。
 
 ---
 
-## 3. 协作规范
+## 5. 协作规范
 
-### 3.1 文件格式
+### 文件格式
 
-所有文件使用 Markdown 格式，页面开头必须包含 YAML frontmatter：
+所有文件使用 Markdown，页面开头必须包含 YAML frontmatter：
 
 ```yaml
 ---
@@ -86,58 +93,26 @@ tags: [标签1, 标签2]
 ---
 ```
 
-### 3.2 Sources 页面 Frontmatter
+Sources 页面需额外追踪字段（docid、source_path、source_hash、source_mtime、aliases），稳定知识页可含消歧与统计字段，分析输出页可含去重字段。详见 ingesting-resources skill 的 reference 文件：
+- Frontmatter 模板与字段说明：`frontmatter_template.md`
+- 页面内容模板：`page_templates.md`
 
-Sources 页面需要额外包含追踪字段，用于检测文件同步状态：
-
-```yaml
----
-title: 页面标题
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-type: source
-tags: [标签1, 标签2]
-source_path: Resources相对路径.md
-source_hash: SHA256前8位
-source_mtime: ISO8601时间戳
----
-```
-
-| 字段 | 说明 |
-|------|------|
-| `source_path` | Resources 目录中的相对路径 |
-| `source_hash` | 文件内容 SHA256 前 8 位，用于检测变更 |
-| `source_mtime` | 文件最后修改时间，用于快速筛选 |
-
-**Hash 计算**：
-
-```bash
-# macOS / Linux
-sha256sum "$file" | cut -c1-8
-
-# Windows PowerShell
-(Get-FileHash "$file" -Algorithm SHA256).Hash.Substring(0,8)
-
-# 跨平台（openssl）
-openssl dgst -sha256 "$file" | sed 's/.*= //' | cut -c1-8
-```
-
-### 3.3 页面引用
+### 页面引用
 
 页面间使用 `[[wiki-links]]` 格式引用。
 
-### 3.4 命名规范
+### 命名规范
 
-- 概念页面: `Wiki/Concepts/{概念名}.md`
-- 实体页面: `Wiki/Entities/{实体名}.md`
-- 来源摘要: `Wiki/Sources/{来源标识}.md`
-- 查询产出: `Wiki/Outputs/{日期}-{主题}.md`
+- 概念页面：`Wiki/Concepts/{概念名}.md`
+- 实体页面：`Wiki/Entities/{实体名}.md`
+- 来源摘要：`Wiki/Sources/{来源标识}.md`
+- 查询产出：`Wiki/Outputs/{日期}-{主题}.md`
 
 ---
 
-## 4. 操作日志格式
+## 6. 日志与索引
 
-日志采用可解析格式，便于用 unix 工具检索：
+**日志**（`Wiki/Log.md`）采用可解析格式：
 
 ```markdown
 ## [YYYY-MM-DD] 操作类型 | 标题
@@ -147,52 +122,26 @@ openssl dgst -sha256 "$file" | sed 's/.*= //' | cut -c1-8
 - **备注**: 操作细节（可选）
 ```
 
-**解析示例**:
+操作类型枚举：`ingest` | `query` | `lint` | `sync`
 
-- `grep "^## \[" Log.md | tail -5` — 最近5条记录
-- `grep "| ingest" Log.md` — 所有摄取操作
+> Schema 变更（AGENTS.md、Skills、Reference）记录到项目根目录 `CHANGELOG.md`，不在 Log.md 中记录。
 
----
+解析示例：`grep "^## \[" Log.md | tail -5`、`grep "| ingest" Log.md`
 
-## 5. 目录页格式
-
-`Wiki/Index.md` 维护所有页面的目录：
-
-```markdown
-# 知识库目录
-
-## 概念
-- [[Concepts/概念A]] - 一句话摘要
-- [[Concepts/概念B]] - 一句话摘要
-
-## 实体
-- [[Entities/实体A]] - 一句话摘要
-
-## 来源
-- [[Sources/来源A]] - 一句话摘要（来自 Resources 目录）
-
-## 产出
-- [[Outputs/产出A]] - 一句话摘要
-```
+**索引**（`Wiki/Index.md`）列出所有页面及其一句话摘要，按概念/实体/来源/产出分类。
 
 ---
 
-## 6. 搜索优先级
+## 7. 搜索优先级
 
-当用户提出问题或请求检索信息时，优先使用 `querying-wiki` skill，通过 `qmd` CLI 进行检索：
+1. 先读 `Wiki/Index.md` 定位候选页面范围
+2. 优先检索稳定知识页与分析输出页
+3. 混合搜索（`qmd query`）增强召回
+4. 精确读取（`qmd get` / `qmd multi-get`）
+5. 稳定知识不足时再展开 `Sources/`
+6. `qmd` 不可用时退化到 Index 导航 + 文件直读
 
-1. **混合搜索优先**: `qmd query` 自动扩展+重排序，获得最佳召回
-2. **已知路径**: `qmd get <file>` 精确获取
-3. **批量需求**: `qmd multi-get <pattern>` 配合 glob 模式
-4. **浏览索引**: `qmd ls wiki` 查看所有可检索文件
-
----
-
-## 7. 响应风格
-
-- 专业、简洁、系统化
-- 避免口语化和模糊表达
-- 引用来源时使用 `[[wiki-links]]` 格式
+如需拼接多个 Sources 页面才能回答，视为知识缺口；结果具长期价值时优先回填到分析输出页。
 
 ---
 
@@ -201,50 +150,51 @@ openssl dgst -sha256 "$file" | sed 's/.*= //' | cut -c1-8
 | Skill | 触发场景 | 功能 |
 |-------|---------|------|
 | `syncing-wiki` | 同步并处理、完整同步 | 完整工作流：检测→确认→处理→验证→日志→报告 |
-| `ingesting-resources` | 摄取新文件、处理 Resources | 生成摘要、提取概念实体、更新索引 |
-| `querying-wiki` | 用户提问、知识检索 | 混合检索、综合回答、结果回填 |
-| `checking-wiki-health` | 健康检查、状态检测 | 孤立页面、矛盾、缺口、同步状态 |
+| `ingesting-resources` | 摄取新文件、处理 Resources | 生成摘要、提取概念实体、更新相关页面与索引 |
+| `querying-wiki` | 用户提问、知识检索 | 混合检索、综合回答、识别知识缺口、结果回填 |
+| `checking-wiki-health` | 健康检查、状态检测 | 孤立页面、矛盾、缺口、同步状态、认知质量 |
 | `detecting-resources-sync` | 检测新文件、同步状态 | 仅检测变更状态，不自动处理 |
 
-**推荐**：日常维护使用 `syncing-wiki` 一次性完成检测和处理。
-
-Skills 位于 `.claude/skills/` 目录，Claude Code 会自动加载。
+Skills 位于 `.claude/skills/` 目录，Claude Code 按需自动加载。
 
 ---
 
-## 9. 典型工作流示例
+## 9. 安全与写入边界
 
-### 场景 1：首次使用
+### 角色分工
 
-运行 `sync-and-process` 完成初始化：
-```
-同步并处理
-```
+| 角色 | 权限 | 禁止项 |
+|------|------|--------|
+| User | 定义目标、确认范围、审批高影响决策 | — |
+| Agent | 在允许范围内执行读写、检索、同步、留痕 | 越权修改未授权目录 |
+| Skills | 提供任务级流程规范与模板 | 取代全局架构约束 |
 
-系统将自动：检测变更 → 确认处理 → 摄取更新 → 验证结果 → 记录日志 → 输出报告
+### 写入边界（强约束）
 
-### 场景 2：日常维护
+- 允许写入：`Wiki/`、`.claude/skills/`、`AGENTS.md`、`CLAUDE.md`
+- 禁止写入：`ObsidianRaw/`（仅只读）、未授权配置/脚本目录
+- 若用户仅要求评估/分析，默认只读，不进行任何写入
 
-定期运行 `sync-and-process` 检测并处理变更：
-```
-同步并处理
-```
+### 安全与合规
 
-每周运行健康检查：
-```
-健康检查
-```
+- 不写入凭据、密钥、令牌等敏感信息
+- 不在日志中记录隐私原文，仅记录必要摘要与路径
+- 高风险操作（批量删除、覆盖）必须先显式确认
 
-### 场景 3：仅检测不处理
+---
 
-```
-检测新文件
-```
-输出同步状态后询问是否继续处理。
+## 10. 兼容性
 
-### 场景 4：知识查询
+- 架构规范版本：见项目根目录 `VERSION` 文件
+- Schema 变更记录：见项目根目录 `CHANGELOG.md`
+- 默认依赖：`qmd` CLI（混合检索）；不可用时退化到 `Index.md` + 文件直读
+- 哈希工具：优先 `openssl`，必要时使用系统原生命令
 
-```
-韧性理论有哪些发展阶段？
-```
-系统自动检索并回答，如有长期价值建议保存到 Outputs/。
+---
+
+## 11. 响应风格
+
+- 专业、简洁、系统化
+- 避免口语化和模糊表达
+- 引用来源时使用 `[[wiki-links]]` 格式
+- 同步状态术语统一使用：新增 / 变更 / 删除 / 同步 / 重命名（必要时附 machine label）
